@@ -18,6 +18,14 @@ public class Employee {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 	
+	
+	public Employee(String firstname, String lastname, String emailId) {
+		super();
+		Firstname = firstname;
+		Lastname = lastname;
+		this.emailId = emailId;
+	}
+	
 	@Column(name="firstname")
 	private String Firstname;
 	

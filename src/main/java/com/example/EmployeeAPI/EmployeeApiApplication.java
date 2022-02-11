@@ -11,7 +11,7 @@ public class EmployeeApiApplication {
 		SpringApplication.run(EmployeeApiApplication.class, args);
 		System.out.println("-----------------------------------------");
 		System.out.println("Hello Chaymae");
-		System.out.println("Welcome to Employee API");
+		System.out.println("Welcome to Employee MySQL API");
         System.out.println("version: " + SpringVersion.getVersion());
 	}
 
