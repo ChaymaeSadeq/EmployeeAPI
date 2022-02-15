@@ -5,6 +5,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,68 +18,54 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.EmployeeAPI.dto.EmployeeDTO;
 import com.example.EmployeeAPI.exception.ResourceNotFound;
 import com.example.EmployeeAPI.model.Employee;
 import com.example.EmployeeAPI.repository.EmployeeRepository;
+import com.example.EmployeeAPI.service.EmployeeService;
 
 import ch.qos.logback.core.joran.conditional.ThenOrElseActionBase;
-
-
 
 @RestController
 @RequestMapping("/api1")
 public class EmployeeController {
 
 	@Autowired
-	private EmployeeRepository employeeRep;
-	
-	//Get all employees 
+	private EmployeeService employeeService;
+
 	@GetMapping("/employees")
-	public List<Employee> getAllEmployees(){
-		System.out.println("Hello from GET");
-		return employeeRep.findAll();
-		
+	public List<EmployeeDTO> GetEmployees() {
+		return employeeService.getAllEmployees();
 	}
-	
-	//Get employees by id
+
 	@GetMapping("/employees/{id}")
-	public ResponseEntity<Employee> getEmployeeById(@PathVariable(value = "id") Long employeeId)
-			throws ResourceNotFound {
-		System.out.println("Hello from GETBYID");
-		Employee employee = employeeRep.findById(employeeId)
-				.orElseThrow(() -> new ResourceNotFound("Employee with id = "	+ employeeId + " was not found"));
-		return ResponseEntity.ok().body(employee);
+	public EmployeeDTO GetEmployeesById(@PathVariable long id) throws ResourceNotFound{
+		return employeeService.getEmployeeById(id);
 	}
-	
-	//Create employee
+
+	@PutMapping("/employees/{id}")
+	public ResponseEntity<EmployeeDTO> UpdateEmployees(@PathVariable("id") long id, @RequestBody Employee employee) {
+
+		EmployeeDTO employeeData = employeeService.getEmployeeById(id);
+		EmployeeDTO employeeDto = employeeData;
+
+		employeeDto.setFirstname(employee.getFirstname());
+		employeeDto.setLastname(employee.getLastname());
+		employeeDto.setEmailId(employee.getEmailId());
+		return new ResponseEntity<>(employeeService.createEmployee(employeeDto), HttpStatus.OK);
+	}
+
 	@PostMapping("/employees")
-	public Employee createEmployee(@Valid @RequestBody Employee employee) {
-		System.out.println("Hello from POST");
-		return employeeRep.save(employee);
+	public ResponseEntity<EmployeeDTO> AddEmployees(@RequestBody Employee employee) throws ResourceNotFound{
+
+		EmployeeDTO employeedto = employeeService.createEmployee(employee.convertToEmployeeDto());
+		return new ResponseEntity<>(employeedto, HttpStatus.CREATED);
 	}
-	
-	
-//	@PutMapping(name="/employees/{id}")
-	@RequestMapping(value = "/employees/{id}", 
-	  produces = "application/json", 
-	  method=RequestMethod.PUT)
-	
-	public ResponseEntity<Employee> UpdateEmployee(@PathVariable (value="id") Long employeeId, @RequestBody Employee employeeDetails) throws ResourceNotFound {
-		System.out.println("Hello from PUT");
-		Employee employee= employeeRep.findById(employeeId).orElseThrow(()->new ResourceNotFound("Employee with id = "	+ employeeId + " was not found"));
-		employee.setFirstname(employeeDetails.getFirstname());
-		employee.setLastname(employeeDetails.getLastname());
-		employee.setEmailId(employeeDetails.getEmailId());
-		employeeRep.save(employee);
-		return ResponseEntity.ok().body(employee);
-	}
-	
+
 	@DeleteMapping("/employees/{id}")
-	public ResponseEntity DeleteEmployee(@PathVariable (value="id") Long employeeId) throws ResourceNotFound{
-		System.out.println("Hello from DELETE");
-		Employee employee= employeeRep.findById(employeeId).orElseThrow(()->new ResourceNotFound("Employee with id = "	+ employeeId + " was not found"));
-		employeeRep.deleteById(employeeId);
-		return ResponseEntity.ok().body(employee);
+	public ResponseEntity<HttpStatus> DeleteEmployees(@PathVariable("id") long id) throws ResourceNotFound{
+		employeeService.DeleteEmployee(id);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
 	}
 }
-
